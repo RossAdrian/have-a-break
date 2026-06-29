@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Planned games: Snake, Graph Coloring, Tower of Hanoi, Pattern Guesser, Sliding Puzzle, 2048, Estimation Challenge, Typing Speed, Hangman with categories.
 
+Before implementing any game, check that cargo build passes cleanly. After implementing any game, run cargo clippy and fix all warnings before moving on.
+
 ## Commands
 
 ```bash
