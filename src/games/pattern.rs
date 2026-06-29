@@ -1,0 +1,41 @@
+//! Pattern Guesser game stub.
+
+use anyhow::Result;
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use ratatui::{
+    layout::Alignment,
+    widgets::{Block, Borders, Paragraph},
+};
+
+use crate::{
+    games::{Game, GameResult},
+    terminal::Term,
+};
+
+/// Pattern Guesser game (coming soon).
+pub struct Pattern;
+
+impl Game for Pattern {
+    fn run(&mut self, terminal: &mut Term) -> Result<GameResult> {
+        loop {
+            terminal.draw(|frame| {
+                let para = Paragraph::new("Coming soon — press Q to return.")
+                    .block(Block::default().title(" Pattern Guesser ").borders(Borders::ALL))
+                    .alignment(Alignment::Center);
+                frame.render_widget(para, frame.area());
+            })?;
+
+            if event::poll(std::time::Duration::from_millis(100))?
+                && let Event::Key(key) = event::read()?
+                && key.kind == KeyEventKind::Press
+            {
+                match key.code {
+                    KeyCode::Char('q') | KeyCode::Char('Q') => {
+                        return Ok(GameResult::BackToMenu)
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
