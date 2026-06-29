@@ -1,0 +1,26 @@
+# Estimation Challenge question bank
+# Format: question text | numeric answer | display string | unit label
+# Lines starting with # and blank lines are ignored.
+How many kilometres is it from Berlin to Tokyo (great-circle distance)?|8953|8,953|km
+How many seconds are there in one non-leap year?|31536000|31,536,000|seconds
+What is the population of Brazil, in millions?|215|215|million people
+How tall is Mount Everest above sea level, in metres?|8849|8,849|metres
+How many kilometres is it from the Earth to the Moon (mean distance)?|384400|384,400|km
+What is the speed of light in kilometres per second?|299792|299,792|km/s
+What is the population of India, in millions?|1400|1,400|million people
+What is the area of Russia, in thousands of square kilometres?|17098|17,098|thousand km²
+How heavy is an adult blue whale, in kilograms?|150000|150,000|kg
+How many millions of kilometres is it from the Earth to the Sun?|150|150|million km
+How many bones are there in the adult human body?|206|206|bones
+How deep is the Mariana Trench at its deepest point, in metres?|11034|11,034|metres
+What is the speed of sound in air at room temperature, in metres per second?|343|343|m/s
+What is the population of New York City, in millions?|8.3|8.3|million people
+How many kilometres is it from New York to London (great-circle distance)?|5570|5,570|km
+How old is the universe, in billions of years?|13.8|13.8|billion years
+Approximately how many stars are there in the Milky Way, in billions?|250|250|billion stars
+What is the total height of the Eiffel Tower including its antenna, in metres?|330|330|metres
+How many UN-recognised countries are there in the world?|195|195|countries
+What is the equatorial circumference of the Earth in kilometres?|40075|40,075|km
+How many kilometres is it from Berlin to New York (great-circle distance)?|6388|6,388|km
+How many entries does the Oxford English Dictionary contain, in thousands?|171|171|thousand words
+What is the boiling point of water at sea level, in Kelvin?|373|373|K
