@@ -219,7 +219,7 @@ impl Game for Hangman {
 
                 // Bottom status / result line
                 let status: Paragraph = if won {
-                    Paragraph::new("You won!  Press Q to return to menu.")
+                    Paragraph::new("You won!  Press Esc to return to menu.")
                         .alignment(Alignment::Center)
                         .style(
                             Style::default()
@@ -238,7 +238,7 @@ impl Game for Hangman {
                             .add_modifier(Modifier::BOLD),
                     )
                 } else {
-                    Paragraph::new("Type a letter to guess  •  Q to return to menu")
+                    Paragraph::new("Type a letter to guess  •  Esc to return to menu")
                         .alignment(Alignment::Center)
                         .style(Style::default().fg(Color::DarkGray))
                 };
@@ -250,9 +250,9 @@ impl Game for Hangman {
                 && key.kind == KeyEventKind::Press
             {
                 match key.code {
-                    KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
-                        return Ok(GameResult::BackToMenu);
-                    }
+                    KeyCode::Esc => return Ok(GameResult::BackToMenu),
+                    KeyCode::Char('q') | KeyCode::Char('Q') if game_over => return Ok(GameResult::BackToMenu),
+
                     KeyCode::Char(c) if !game_over && c.is_alphabetic() => {
                         state.guess(c.to_ascii_uppercase());
                     }
