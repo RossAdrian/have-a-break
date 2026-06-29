@@ -63,3 +63,10 @@ Word lists are embedded directly into the binary using `include_str!()` — no e
 - Each game session should complete in under 3 minutes
 - No "play again" prompt; the game ends and returns to the main menu
 - Word lists come from `assets/words.txt` or `/usr/share/dict/words`, embedded at compile time
+
+## Conventions
+
+- Write unit tests for every change and make sure they pass
+- Prioterize readability over cleverness
+- Maintain all over the project clean and complete rustdoc docstrings
+- Keep the overall architecture extensible to add at any time new games
