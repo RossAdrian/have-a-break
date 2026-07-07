@@ -158,6 +158,17 @@ impl Game for Hanoi {
                     v[1],
                 );
 
+                // Goal reminder — disks start scattered across all three pegs, so the
+                // win condition (stack all of them on any single peg) is not obvious.
+                if !won {
+                    frame.render_widget(
+                        Paragraph::new("Goal: move all disks onto a single peg")
+                            .alignment(Alignment::Center)
+                            .style(Style::default().fg(Color::DarkGray)),
+                        v[2],
+                    );
+                }
+
                 // Peg ASCII art
                 frame.render_widget(Paragraph::new(build_peg_lines(&state)), centred(v[3]));
 
@@ -192,18 +203,16 @@ impl Game for Hanoi {
                 };
                 frame.render_widget(status, v[5]);
 
-                // Help line
-                let help_text = if won {
-                    "Q — return to menu"
-                } else {
-                    "A/B/C — pick/place  •  Esc — menu"
-                };
-                frame.render_widget(
-                    Paragraph::new(help_text)
-                        .alignment(Alignment::Center)
-                        .style(Style::default().fg(Color::DarkGray)),
-                    v[6],
-                );
+                // Help line — omitted on the won screen since the status line above
+                // already tells the player to press Q.
+                if !won {
+                    frame.render_widget(
+                        Paragraph::new("A/B/C — pick/place  •  Esc — menu")
+                            .alignment(Alignment::Center)
+                            .style(Style::default().fg(Color::DarkGray)),
+                        v[6],
+                    );
+                }
             })?;
 
             // Clear the one-shot error flag now that it has been rendered.

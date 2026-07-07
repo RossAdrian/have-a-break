@@ -219,7 +219,7 @@ impl Game for Hangman {
 
                 // Bottom status / result line
                 let status: Paragraph = if won {
-                    Paragraph::new("You won!  Press Esc to return to menu.")
+                    Paragraph::new("You won!  Press Q to return to menu")
                         .alignment(Alignment::Center)
                         .style(
                             Style::default()
@@ -228,7 +228,7 @@ impl Game for Hangman {
                         )
                 } else if lost {
                     Paragraph::new(format!(
-                        "Game over!  The word was: {}   Press Q to return.",
+                        "Game over!  The word was: {}  Press Q to return to menu",
                         state.word.iter().collect::<String>()
                     ))
                     .alignment(Alignment::Center)

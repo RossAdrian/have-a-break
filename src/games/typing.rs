@@ -314,9 +314,9 @@ impl Game for Typing {
 
                 // Help hint
                 let help = if done {
-                    "Q  return to menu"
+                    "Q — return to menu"
                 } else {
-                    "Backspace  delete  •  Esc  quit to menu"
+                    "Backspace — delete  •  Esc — menu"
                 };
                 frame.render_widget(
                     Paragraph::new(help)

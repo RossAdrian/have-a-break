@@ -111,8 +111,14 @@ impl SnakeState {
     }
 
     /// Place food at a random empty cell (guaranteed to not overlap the snake).
+    ///
+    /// If the snake fills the entire grid there is no empty cell left; in that
+    /// case the food position is simply left unchanged rather than looping forever.
     fn spawn_food(&mut self) {
         let body_set: HashSet<(i16, i16)> = self.body.iter().copied().collect();
+        if body_set.len() >= (GRID_SIZE * GRID_SIZE) as usize {
+            return;
+        }
         let mut rng = new_rng();
         loop {
             let x = rng.gen_range(0..GRID_SIZE);
@@ -314,7 +320,7 @@ impl Game for Snake {
                             KeyCode::Down => state.queue_dir(Dir::Down),
                             KeyCode::Left => state.queue_dir(Dir::Left),
                             KeyCode::Right => state.queue_dir(Dir::Right),
-                            KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                            KeyCode::Esc => {
                                 return Ok(GameResult::BackToMenu);
                             }
                             _ => {}
@@ -373,6 +379,25 @@ mod tests {
     fn new_starts_moving_right() {
         let s = SnakeState::new();
         assert_eq!(s.dir, Dir::Right);
+    }
+
+    #[test]
+    fn spawn_food_returns_when_grid_is_full() {
+        let full_body: VecDeque<(i16, i16)> = (0..GRID_SIZE)
+            .flat_map(|x| (0..GRID_SIZE).map(move |y| (x, y)))
+            .collect();
+        let mut s = SnakeState {
+            body: full_body,
+            dir: Dir::Right,
+            next_dir: Dir::Right,
+            food: (0, 0),
+            score: 0,
+            tick_ms: INIT_TICK_MS,
+            phase: Phase::Playing,
+        };
+        // Must return immediately instead of looping forever searching for an empty cell.
+        s.spawn_food();
+        assert_eq!(s.food, (0, 0));
     }
 
     #[test]
