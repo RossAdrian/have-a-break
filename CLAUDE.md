@@ -46,6 +46,7 @@ src/
     └── score.rs       ← score tracking
 assets/
 └── words.txt          ← embedded at compile time via include_str!()
+QA/                    ← QA reports
 ```
 
 ## Key crates (to be added)
