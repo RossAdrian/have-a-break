@@ -9,7 +9,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
 };
 
 use crate::{
@@ -20,6 +20,46 @@ use crate::{
 
 /// Maximum number of wrong guesses before the player loses.
 const MAX_WRONG: u8 = 6;
+
+/// A selectable hangman word category, backed by an embedded asset file.
+struct Category {
+    /// Display name shown on the category-select screen and the in-game HUD.
+    name: &'static str,
+    /// Raw newline-separated word list embedded at compile time.
+    text: &'static str,
+}
+
+impl Category {
+    /// Words in this category, one per line, blank lines filtered out.
+    fn words(&self) -> impl Iterator<Item = &'static str> {
+        self.text.lines().filter(|l| !l.is_empty())
+    }
+}
+
+/// All selectable hangman word categories.
+///
+/// To add a new category: drop a newline-separated word list under `assets/`
+/// and add one more `Category` entry here.
+fn categories() -> [Category; 4] {
+    [
+        Category {
+            name: "Common English Words",
+            text: crate::common::words::word_list(),
+        },
+        Category {
+            name: "Animals",
+            text: include_str!("../../assets/hangman_animals.txt"),
+        },
+        Category {
+            name: "Countries",
+            text: include_str!("../../assets/hangman_countries.txt"),
+        },
+        Category {
+            name: "Programming Terms",
+            text: include_str!("../../assets/hangman_programming.txt"),
+        },
+    ]
+}
 
 /// Classic hangman ASCII art, one entry per wrong-guess count (0–6).
 const STAGES: [&str; 7] = [
@@ -40,9 +80,9 @@ struct HangmanState {
 }
 
 impl HangmanState {
-    /// Pick a random word from the embedded word list and start a fresh session.
-    fn new() -> Self {
-        let word_list: Vec<&str> = crate::common::words::words().collect();
+    /// Pick a random word from `category` and start a fresh session.
+    fn new(category: &Category) -> Self {
+        let word_list: Vec<&str> = category.words().collect();
         let mut rng = new_rng();
         let word = word_list
             .choose(&mut rng)
@@ -101,7 +141,78 @@ pub struct Hangman;
 
 impl Game for Hangman {
     fn run(&mut self, terminal: &mut Term) -> Result<GameResult> {
-        let mut state = HangmanState::new();
+        let categories = categories();
+        let mut selected: usize = 0;
+
+        loop {
+            terminal.draw(|frame| {
+                let area = frame.area();
+
+                let vchunks = Layout::vertical([
+                    Constraint::Fill(1),
+                    Constraint::Length(categories.len() as u16 + 2), // +2 for borders
+                    Constraint::Length(1),
+                    Constraint::Fill(1),
+                ])
+                .split(area);
+
+                let hchunks = Layout::horizontal([
+                    Constraint::Fill(1),
+                    Constraint::Max(42),
+                    Constraint::Fill(1),
+                ])
+                .split(vchunks[1]);
+
+                let items: Vec<ListItem> = categories.iter().map(|c| ListItem::new(c.name)).collect();
+
+                let list = List::new(items)
+                    .block(
+                        Block::default()
+                            .title(" Hangman — Select Category ")
+                            .borders(Borders::ALL),
+                    )
+                    .highlight_style(
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                    .highlight_symbol("> ");
+
+                let mut list_state = ListState::default();
+                list_state.select(Some(selected));
+
+                frame.render_stateful_widget(list, hchunks[1], &mut list_state);
+
+                let help = Paragraph::new(Line::from(
+                    "↑↓ navigate  •  Enter select  •  Esc — menu  •  Q — menu",
+                ))
+                .alignment(Alignment::Center)
+                .style(Style::default().fg(Color::DarkGray));
+                frame.render_widget(help, vchunks[2]);
+            })?;
+
+            if event::poll(std::time::Duration::from_millis(100))?
+                && let Event::Key(key) = event::read()?
+                && key.kind == KeyEventKind::Press
+            {
+                match key.code {
+                    KeyCode::Up => selected = selected.saturating_sub(1),
+                    KeyCode::Down => {
+                        if selected + 1 < categories.len() {
+                            selected += 1;
+                        }
+                    }
+                    KeyCode::Enter => break,
+                    KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                        return Ok(GameResult::BackToMenu);
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        let category = &categories[selected];
+        let mut state = HangmanState::new(category);
 
         loop {
             let won = state.is_won();
@@ -146,10 +257,10 @@ impl Game for Hangman {
                 };
 
                 // Category hint
-                let category = Paragraph::new("Category: Common English Word")
+                let category_hint = Paragraph::new(format!("Category: {}", category.name))
                     .alignment(Alignment::Center)
                     .style(Style::default().fg(Color::Cyan));
-                frame.render_widget(category, centre(v[1]));
+                frame.render_widget(category_hint, centre(v[1]));
 
                 // ASCII art — red on loss
                 let art_color = if lost { Color::Red } else { Color::White };
@@ -277,10 +388,53 @@ mod tests {
 
     #[test]
     fn new_game_starts_clean() {
-        let s = HangmanState::new();
+        let category = &categories()[0];
+        let s = HangmanState::new(category);
         assert_eq!(s.wrong, 0);
         assert!(s.guessed.is_empty());
         assert!(!s.word.is_empty());
+    }
+
+    #[test]
+    fn every_category_has_enough_words() {
+        for category in categories() {
+            let count = category.words().count();
+            assert!(
+                count >= 20,
+                "category {:?} has only {count} words",
+                category.name
+            );
+        }
+    }
+
+    #[test]
+    fn every_category_word_is_alphabetic() {
+        for category in categories() {
+            for word in category.words() {
+                assert!(
+                    word.chars().all(|c| c.is_ascii_alphabetic()),
+                    "category {:?} contains non-alphabetic word {word:?}",
+                    category.name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn category_names_are_unique() {
+        let categories = categories();
+        let mut names: Vec<&str> = categories.iter().map(|c| c.name).collect();
+        names.sort_unstable();
+        names.dedup();
+        assert_eq!(names.len(), categories.len());
+    }
+
+    #[test]
+    fn new_game_picks_word_from_its_category() {
+        let category = &categories()[1]; // Animals
+        let s = HangmanState::new(category);
+        let word: String = s.word.iter().collect();
+        assert!(category.words().any(|w| w.eq_ignore_ascii_case(&word)));
     }
 
     #[test]
